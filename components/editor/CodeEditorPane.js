@@ -1,13 +1,19 @@
 import Editor from "@monaco-editor/react";
 import styles from '../../styles/CodeEditor.module.css';
 
-export default function CodeEditorPane({ code, language, onChange, onRun, isRunning }) {
+export default function CodeEditorPane({ code, language, onCodeChange, onRunCode, isRunning }) {
   const getLanguageId = () => {
     switch(language.name) {
       case 'C++': return 'cpp';
       case 'Python': return 'python';
       case 'Java': return 'java';
       default: return 'cpp';
+    }
+  };
+
+  const handleEditorChange = (value) => {
+    if (value !== undefined && value !== null) {
+      onCodeChange(value);
     }
   };
 
@@ -19,7 +25,7 @@ export default function CodeEditorPane({ code, language, onChange, onRun, isRunn
         language={getLanguageId()}
         theme="vs-dark"
         value={code}
-        onChange={onChange}
+        onChange={handleEditorChange}
         options={{
           minimap: { enabled: false },
           fontSize: 14,
@@ -33,7 +39,7 @@ export default function CodeEditorPane({ code, language, onChange, onRun, isRunn
       />
       <div className={styles.editorActions}>
         <button 
-          onClick={onRun} 
+          onClick={onRunCode}  // Changed from onRun to onRunCode to match parent prop
           disabled={isRunning}
           className={styles.runButton}
         >

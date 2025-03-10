@@ -1,29 +1,57 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 export default function SlidingPanels({ leftPanel, rightPanel }) {
+  const [isResizing, setIsResizing] = useState(false);
+  const [leftWidth, setLeftWidth] = useState(50); // percentage
   const [isRightPanelVisible, setIsRightPanelVisible] = useState(false);
+
+  const startResizing = useCallback((e) => {
+    setIsResizing(true);
+  }, []);
+
+  const stopResizing = useCallback(() => {
+    setIsResizing(false);
+  }, []);
+
+  const resize = useCallback((e) => {
+    if (isResizing) {
+      const container = document.querySelector('.panels-container');
+      if (!container) return;
+
+      const containerWidth = container.offsetWidth;
+      const newWidth = (e.clientX / containerWidth) * 100;
+      
+      // Limit the range between 20% and 80%
+      if (newWidth >= 20 && newWidth <= 80) {
+        setLeftWidth(newWidth);
+      }
+    }
+  }, [isResizing]);
+
+  useEffect(() => {
+    window.addEventListener('mousemove', resize);
+    window.addEventListener('mouseup', stopResizing);
+
+    return () => {
+      window.removeEventListener('mousemove', resize);
+      window.removeEventListener('mouseup', stopResizing);
+    };
+  }, [resize, stopResizing]);
 
   return (
     <div className="panels-container">
-      <div className="panels-wrapper" style={{ transform: `translateX(${isRightPanelVisible ? '-50%' : '0'})` }}>
-        <div className="panel left-panel">
+      <div className="panels-wrapper">
+        <div className="panel left-panel" style={{ width: `${leftWidth}%` }}>
           {leftPanel}
-          <button 
-            className="slide-button right" 
-            onClick={() => setIsRightPanelVisible(true)}
-            aria-label="Show editor"
-          >
-            <span>→</span>
-          </button>
         </div>
-        <div className="panel right-panel">
-          <button 
-            className="slide-button left" 
-            onClick={() => setIsRightPanelVisible(false)}
-            aria-label="Show problem"
-          >
-            <span>←</span>
-          </button>
+        
+        <div 
+          className="resizer"
+          onMouseDown={startResizing}
+          style={{ left: `${leftWidth}%` }}
+        />
+
+        <div className="panel right-panel" style={{ width: `${100 - leftWidth}%` }}>
           {rightPanel}
         </div>
       </div>
@@ -38,62 +66,58 @@ export default function SlidingPanels({ leftPanel, rightPanel }) {
 
         .panels-wrapper {
           display: flex;
-          width: 200%;
+          width: 100%;
           height: 100%;
-          transition: transform 0.3s ease;
+          position: relative;
         }
 
         .panel {
-          width: 50%;
           height: 100%;
-          position: relative;
           overflow-y: auto;
+          position: relative;
+          transition: width 0.1s ease;
         }
 
-        .slide-button {
-          position: fixed;
-          top: 50%;
-          transform: translateY(-50%);
+        .resizer {
+          width: 4px;
+          height: 100%;
           background: #2563eb;
-          color: white;
-          border: none;
-          padding: 1rem 0.5rem;
-          cursor: pointer;
-          border-radius: 0 4px 4px 0;
-          opacity: 0.8;
+          position: absolute;
+          cursor: col-resize;
+          opacity: 0.5;
           transition: opacity 0.2s;
-          z-index: 100;
+          z-index: 10;
         }
 
-        .slide-button:hover {
+        .resizer:hover,
+        .resizer:active {
           opacity: 1;
         }
 
-        .slide-button.right {
-          right: 0;
+        .resizer::after {
+          content: '';
+          position: absolute;
+          left: -8px;
+          width: 20px;
+          height: 100%;
+          cursor: col-resize;
         }
 
-        .slide-button.left {
-          left: 0;
-          border-radius: 4px 0 0 4px;
-        }
-
-        @media (min-width: 1024px) {
-          .panels-container {
-            width: 100%;
-          }
-          
-          .panels-wrapper {
-            width: 100%;
-            transform: none !important;
+        @media (max-width: 1024px) {
+          .resizer {
+            display: none;
           }
           
           .panel {
-            width: 50%;
+            width: 100% !important;
           }
           
-          .slide-button {
-            display: none;
+          .right-panel {
+            display: ${isRightPanelVisible ? 'block' : 'none'};
+          }
+          
+          .left-panel {
+            display: ${isRightPanelVisible ? 'none' : 'block'};
           }
         }
       `}</style>

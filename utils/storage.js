@@ -1,7 +1,11 @@
 export const storageKeys = {
   PROBLEM_DATA: 'problemData',
   CODE: 'editorCode',
-  LANGUAGE: 'selectedLanguage'
+  LANGUAGE: 'selectedLanguage',
+  CUSTOM_TEST_CASES: 'customTestCases',
+  CPP_CODE: 'cppCode',
+  PYTHON_CODE: 'pythonCode',
+  JAVA_CODE: 'javaCode',
 };
 
 export function saveToStorage(key, data) {

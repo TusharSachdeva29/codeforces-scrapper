@@ -5,6 +5,7 @@ import { useCodeExecution } from '../hooks/useCodeExecution';
 import TestCaseView from './editor/TestCaseView';
 import dynamic from 'next/dynamic';
 import styles from '../styles/CodeEditor.module.css';
+import CustomTestCase from './editor/CustomTestCase';
 
 // Update CodeEditorPane import to be dynamic
 const CodeEditorPane = dynamic(
@@ -21,30 +22,40 @@ export default function CodeEditor({ testCases }) {
     return Languages.CPP;
   });
 
-  const [code, setCode] = useState(() => {
+  const [cppCode, setCppCode] = useState(() => {
     if (typeof window !== 'undefined') {
-      return getFromStorage(storageKeys.CODE) || language.template;
+      return getFromStorage(storageKeys.CPP_CODE) || Languages.CPP.template;
     }
-    return language.template;
+    return Languages.CPP.template;
+  });
+
+  const [pythonCode, setPythonCode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return getFromStorage(storageKeys.PYTHON_CODE) || Languages.PYTHON.template;
+    }
+    return Languages.PYTHON.template;
+  });
+
+  const [javaCode, setJavaCode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return getFromStorage(storageKeys.JAVA_CODE) || Languages.JAVA.template;
+    }
+    return Languages.JAVA.template;
   });
 
   const [activeTab, setActiveTab] = useState('code');
   const { results, setResults, isRunning, executeCode } = useCodeExecution();
 
+  // Update useEffect to load saved code only once on mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedLanguage = getFromStorage(storageKeys.LANGUAGE);
-      const savedCode = getFromStorage(storageKeys.CODE);
       
       if (savedLanguage && Languages[savedLanguage]) {
         setLanguage(Languages[savedLanguage]);
       }
-      
-      if (savedCode) {
-        setCode(savedCode);
-      }
     }
-  }, []);
+  }, []); // Empty dependency array to run only once
 
   useEffect(() => {
     if (setResults) {
@@ -54,36 +65,60 @@ export default function CodeEditor({ testCases }) {
   }, [testCases, setResults]);
 
   useEffect(() => {
-    saveToStorage(storageKeys.CODE, code);
-  }, [code]);
-
-  useEffect(() => {
     saveToStorage(storageKeys.LANGUAGE, language.name);
   }, [language]);
+
+  const getCurrentCode = () => {
+    switch(language.name) {
+      case 'C++': return cppCode;
+      case 'Python': return pythonCode;
+      case 'Java': return javaCode;
+      default: return cppCode;
+    }
+  };
 
   const handleLanguageChange = (e) => {
     const newLanguage = Object.values(Languages).find(
       lang => lang.id === parseInt(e.target.value)
     ) || Languages.CPP;
-    
     setLanguage(newLanguage);
-    saveToStorage(storageKeys.LANGUAGE, newLanguage.name);
-    
-    const savedCode = getFromStorage(storageKeys.CODE);
-    if (!savedCode) {
-      setCode(newLanguage.template);
-      saveToStorage(storageKeys.CODE, newLanguage.template);
+  };
+
+  const handleCodeChange = (newCode) => {
+    if (newCode === undefined || newCode === null) return;
+
+    switch(language.name) {
+      case 'C++':
+        setCppCode(newCode);
+        saveToStorage(storageKeys.CPP_CODE, newCode);
+        break;
+      case 'Python':
+        setPythonCode(newCode);
+        saveToStorage(storageKeys.PYTHON_CODE, newCode);
+        break;
+      case 'Java':
+        setJavaCode(newCode);
+        saveToStorage(storageKeys.JAVA_CODE, newCode);
+        break;
     }
   };
 
-  const handleCodeChange = (value) => {
-    setCode(value);
-    saveToStorage(storageKeys.CODE, value);
+  const handleCodeRun = async () => {
+    const currentCode = getCurrentCode();
+    const newResults = await executeCode(currentCode, testCases, language.id);
+    setActiveTab('testcases');
   };
 
-  const handleCodeRun = async () => {
-    const newResults = await executeCode(code, testCases, language.id);
-    setActiveTab('testcases');
+  const handleCustomTest = async (input, expectedOutput) => {
+    const result = await executeCode(getCurrentCode(), [{
+      input,
+      output: expectedOutput
+    }], language.id);
+    return result[0];
+  };
+
+  const handleTabChange = (newTab) => {
+    setActiveTab(newTab);
   };
 
   if (!language) return null;
@@ -106,19 +141,19 @@ export default function CodeEditor({ testCases }) {
         <div className={styles.editorTabs}>
           <button 
             className={`${styles.tab} ${activeTab === 'code' ? styles.active : ''}`}
-            onClick={() => setActiveTab('code')}
+            onClick={() => handleTabChange('code')}
           >
             Code
           </button>
           <button 
             className={`${styles.tab} ${activeTab === 'testcases' ? styles.active : ''}`}
-            onClick={() => setActiveTab('testcases')}
+            onClick={() => handleTabChange('testcases')}
           >
             Sample Cases ({testCases.length})
           </button>
           <button 
             className={`${styles.tab} ${activeTab === 'custom' ? styles.active : ''}`}
-            onClick={() => setActiveTab('custom')}
+            onClick={() => handleTabChange('custom')}
           >
             Custom Input
           </button>
@@ -128,12 +163,14 @@ export default function CodeEditor({ testCases }) {
       <div className={styles.editorContent}>
         {activeTab === 'code' ? (
           <CodeEditorPane 
-            code={code}
+            code={getCurrentCode()}
             onCodeChange={handleCodeChange}
-            onRunCode={handleCodeRun}
+            onRunCode={handleCodeRun} // Changed from onRun to onRunCode
             isRunning={isRunning}
             language={language}
           />
+        ) : activeTab === 'custom' ? (
+          <CustomTestCase onRunTest={handleCustomTest} />
         ) : (
           <TestCaseView 
             testCases={testCases}
