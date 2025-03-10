@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import ProblemDetails from '../components/ProblemDetails';
 import CodeEditor from '../components/CodeEditor';
 import SlidingPanels from '../components/SlidingPanels';
-import { saveToStorage, getFromStorage, storageKeys } from '../utils/storage';
+import { saveToStorage, getFromStorage, storageKeys, clearStorageExcept } from '../utils/storage';
 
 export default function Home() {
   const [problemData, setProblemData] = useState(null);
@@ -17,16 +17,23 @@ export default function Home() {
   }, []);
 
   const fetchProblemData = async () => {
-    const response = await fetch('/api/scrape', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ url }),
-    });
-    const data = await response.json();
-    setProblemData(data);
-    saveToStorage(storageKeys.PROBLEM_DATA, data);
+    try {
+      const response = await fetch('/api/scrape', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url }),
+      });
+      const data = await response.json();
+      setProblemData(data);
+      saveToStorage(storageKeys.PROBLEM_DATA, data);
+      
+      // Clear code storage when loading a new problem
+      clearStorageExcept([storageKeys.PROBLEM_DATA]);
+    } catch (error) {
+      console.error('Error fetching problem:', error);
+    }
   };
 
   return (

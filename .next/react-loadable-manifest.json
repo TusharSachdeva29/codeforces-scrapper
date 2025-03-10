@@ -1,8 +1,8 @@
 {
-  "..\\components\\CodeEditor.js -> react-ace": {
-    "id": "..\\components\\CodeEditor.js -> react-ace",
+  "..\\components\\CodeEditor.js -> ./editor/CodeEditorPane": {
+    "id": "..\\components\\CodeEditor.js -> ./editor/CodeEditorPane",
     "files": [
-      "static/chunks/node_modules_react-ace_lib_index_js.js"
+      "static/chunks/components_editor_CodeEditorPane_js.js"
     ]
   }
 }

@@ -25,3 +25,23 @@ export function getFromStorage(key) {
     return null;
   }
 }
+
+export function clearStorageExcept(keysToKeep) {
+  if (typeof window === 'undefined') return;
+  
+  try {
+    const itemsToKeep = {};
+    keysToKeep.forEach(key => {
+      const value = localStorage.getItem(key);
+      if (value) itemsToKeep[key] = value;
+    });
+    
+    localStorage.clear();
+    
+    Object.entries(itemsToKeep).forEach(([key, value]) => {
+      localStorage.setItem(key, value);
+    });
+  } catch (error) {
+    console.error('Error clearing storage:', error);
+  }
+}

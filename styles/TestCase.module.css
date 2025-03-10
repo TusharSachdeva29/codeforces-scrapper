@@ -1,0 +1,69 @@
+.testCase {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #444;
+  overflow: hidden;
+  background: #2d2d2d;
+}
+
+.pending {
+  border-left: 4px solid #666;
+}
+
+.passed {
+  border-left: 4px solid #4caf50;
+}
+
+.failed {
+  border-left: 4px solid #f44336;
+}
+
+.testCaseHeader {
+  padding: 0.5rem 1rem;
+  background: #2d2d2d;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #444;
+}
+
+.testStatus {
+  font-weight: bold;
+}
+
+.testStatus.passed {
+  color: #28a745;
+}
+
+.testStatus.failed {
+  color: #dc3545;
+}
+
+.testDetails {
+  margin-top: 0.5rem;
+}
+
+.testIO {
+  padding: 1rem;
+}
+
+.testSection {
+  margin-bottom: 0.8rem;
+}
+
+.testLabel {
+  color: #888;
+  margin-bottom: 0.3rem;
+  font-size: 0.9em;
+}
+
+.testStats {
+  padding: 0.5rem 1rem;
+  background: #2d2d2d;
+  border-top: 1px solid #444;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9em;
+  color: #888;
+}
