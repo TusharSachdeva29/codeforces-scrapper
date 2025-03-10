@@ -1,0 +1,8 @@
+{
+  "..\\components\\CodeEditor.js -> react-ace": {
+    "id": "..\\components\\CodeEditor.js -> react-ace",
+    "files": [
+      "static/chunks/node_modules_react-ace_lib_index_js.js"
+    ]
+  }
+}

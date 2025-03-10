@@ -3,7 +3,13 @@ const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
 
-const homepageUrl = "https://codeforces.com/contest/2065/problem/H"; // Change URL for different problems
+const url = process.argv[2]; // Get the URL from the command-line arguments
+
+if (!url) {
+  console.error('Please provide a Codeforces problem URL');
+  process.exit(1);
+}
+
 const filePath = path.join(__dirname, 'scraping1.json');
 const imagesDir = path.join(__dirname, 'images');
 const TIMEOUT = 60000;
@@ -34,7 +40,7 @@ async function scrape() {
         await page.setViewport({ width: 1366, height: 768 });
         
         // Visit Codeforces Problem Page
-        await page.goto(homepageUrl, { waitUntil: 'networkidle2', timeout: TIMEOUT });
+        await page.goto(url, { waitUntil: 'networkidle2', timeout: TIMEOUT });
         
         // Extract Problem Title
         const title = await page.$eval('.title', el => el.innerText.trim());
