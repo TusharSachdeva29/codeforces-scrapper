@@ -1,0 +1,41 @@
+datasource db {
+    provider  = "postgresql"
+    url       = env("DATABASE_URL")
+    directUrl = env("DIRECT_URL") // Add this for Neon database
+}
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+model Problem {
+    id        Int      @id @default(autoincrement())
+    contestId Int
+    problemId String
+    name      String
+    rating    Int?
+    tags      String[]
+    cached    DateTime @default(now())
+}
+
+model DailyProblem {
+    id        Int      @id @default(autoincrement())
+    handle    String
+    rating    Int
+    problemId String
+    contestId Int
+    date      DateTime @default(now())
+
+    @@unique([handle, date])
+}
+
+model RatingProblem {
+    id          Int      @id @default(autoincrement())
+    rating      Int
+    problemData Json
+    date        DateTime @default(now())
+    contestId   Int
+    problemId   String
+
+    @@unique([rating, date])
+}

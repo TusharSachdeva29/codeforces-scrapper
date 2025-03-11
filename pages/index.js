@@ -14,10 +14,25 @@ function MainContent() {
 
   // Load saved problem data on initial render
   useEffect(() => {
-    const savedProblem = getFromStorage(storageKeys.PROBLEM_DATA);
-    if (savedProblem) {
-      setProblemData(savedProblem);
-    }
+    const loadProblem = () => {
+      // First check for POTD
+      const storedPotd = localStorage.getItem('problemData');
+      if (storedPotd) {
+        const potdData = JSON.parse(storedPotd);
+        setProblemData(potdData);
+        saveToStorage(storageKeys.PROBLEM_DATA, potdData);
+        localStorage.removeItem('problemData'); // Clear after loading
+        return;
+      }
+
+      // If no POTD, check for previously saved problem
+      const savedProblem = getFromStorage(storageKeys.PROBLEM_DATA);
+      if (savedProblem) {
+        setProblemData(savedProblem);
+      }
+    };
+
+    loadProblem();
   }, []);
 
   const fetchProblemData = async () => {
