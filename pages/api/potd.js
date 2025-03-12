@@ -12,8 +12,8 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { rating, handle } = req.body;
-    console.log('Received request:', { rating, handle });
+    const { rating } = req.body;
+    console.log('Received request:', { rating });
     
     const normalizedRating = Math.min(1600, Math.max(800, Math.round(rating/100) * 100));
     console.log('Normalized rating:', normalizedRating);
@@ -57,7 +57,6 @@ export default async function handler(req, res) {
     // Store this as user's problem for today
     await prisma.dailyProblem.create({
       data: {
-        handle,
         rating: normalizedRating,
         problemId: problem.problemId,
         contestId: problem.contestId,

@@ -19,14 +19,14 @@ model Problem {
 }
 
 model DailyProblem {
-    id        Int      @id @default(autoincrement())
-    handle    String
-    rating    Int
-    problemId String
-    contestId Int
-    date      DateTime @default(now())
+    id          Int      @id @default(autoincrement())
+    rating      Int
+    problemId   String
+    contestId   Int
+    date        DateTime @default(now())
+    problemData Json
 
-    @@unique([handle, date])
+    @@unique([rating, date])
 }
 
 model RatingProblem {

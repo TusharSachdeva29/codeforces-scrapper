@@ -31,7 +31,6 @@ export default function POTD() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          handle,
           rating: userRating
         }),
       });
