@@ -73,13 +73,13 @@ export default function ProblemDetails({ data }) {
       </div>
       <div className="problem-section">
         <h2>Sample Inputs</h2>
-        {data.sampleInputs.map((input, index) => (
+        {data.sampleInputs && data.sampleInputs.map((input, index) => (
           <pre key={index}>{renderText(input)}</pre>
         ))}
       </div>
       <div className="problem-section">
         <h2>Sample Outputs</h2>
-        {data.sampleOutputs.map((output, index) => (
+        {data.sampleOutputs && data.sampleOutputs.map((output, index) => (
           <pre key={index}>{renderText(output)}</pre>
         ))}
       </div>

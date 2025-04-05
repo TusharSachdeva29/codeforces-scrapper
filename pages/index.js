@@ -11,6 +11,8 @@ function MainContent() {
   const { isDarkMode } = useTheme();
   const [problemData, setProblemData] = useState(null);
   const [url, setUrl] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   // Load saved problem data on initial render
   useEffect(() => {
@@ -37,6 +39,9 @@ function MainContent() {
 
   const fetchProblemData = async () => {
     try {
+      setIsLoading(true);
+      setError(null);
+      
       const response = await fetch('/api/scrape', {
         method: 'POST',
         headers: {
@@ -44,6 +49,12 @@ function MainContent() {
         },
         body: JSON.stringify({ url }),
       });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to fetch problem data');
+      }
+      
       const data = await response.json();
       setProblemData(data);
       saveToStorage(storageKeys.PROBLEM_DATA, data);
@@ -52,6 +63,9 @@ function MainContent() {
       clearStorageExcept([storageKeys.PROBLEM_DATA]);
     } catch (error) {
       console.error('Error fetching problem:', error);
+      setError(error.message || 'Failed to fetch problem. Make sure all dependencies are installed.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -66,7 +80,12 @@ function MainContent() {
               value={url}
               onChange={(e) => setUrl(e.target.value)}
             />
-            <button onClick={fetchProblemData}>Submit</button>
+            <button 
+              onClick={fetchProblemData} 
+              disabled={isLoading}
+            >
+              {isLoading ? 'Loading...' : 'Submit'}
+            </button>
           </div>
         </div>
         <div className="right-section">
@@ -74,15 +93,22 @@ function MainContent() {
         </div>
       </div>
 
+      {error && (
+        <div className="error-message">
+          <p>Error: {error}</p>
+          <p>Make sure to run: <code>npm install puppeteer</code> in your project directory.</p>
+        </div>
+      )}
+
       <SlidingPanels
         leftPanel={problemData && <ProblemDetails data={problemData} />}
         rightPanel={
           <CodeEditor 
             testCases={
-              problemData ? 
+              problemData && problemData.sampleInputs ? 
                 problemData.sampleInputs.map((input, index) => ({
                   input,
-                  output: problemData.sampleOutputs[index]
+                  output: problemData.sampleOutputs?.[index] || ''
                 })) 
                 : []
             } 
@@ -139,6 +165,27 @@ function MainContent() {
           border: none;
           border-radius: 4px;
           cursor: pointer;
+        }
+        
+        button:disabled {
+          background: #6b7280;
+          cursor: not-allowed;
+        }
+        
+        .error-message {
+          padding: 1rem;
+          margin: 1rem;
+          background-color: ${isDarkMode ? '#352828' : '#fee2e2'};
+          color: ${isDarkMode ? '#f87171' : '#b91c1c'};
+          border-radius: 4px;
+          border-left: 4px solid #ef4444;
+        }
+        
+        code {
+          background: ${isDarkMode ? '#1f1f1f' : '#f3f4f6'};
+          padding: 0.2rem 0.4rem;
+          border-radius: 4px;
+          font-family: monospace;
         }
       `}</style>
     </div>

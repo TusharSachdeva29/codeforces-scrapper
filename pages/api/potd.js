@@ -41,17 +41,43 @@ export default async function handler(req, res) {
     const url = `https://codeforces.com/problemset/problem/${problem.contestId}/${problem.problemId}`;
     console.log('Problem URL:', url);
 
-    // Run scraper script
-    await new Promise((resolve, reject) => {
-      execFile('node', ['test.js', url], async (error) => {
-        if (error) reject(error);
-        resolve();
+    // Run scraper script with improved error handling
+    try {
+      await new Promise((resolve, reject) => {
+        execFile('node', ['test.js', url], {timeout: 60000}, (error, stdout, stderr) => {
+          if (error) {
+            console.error('Scraper script error:', error);
+            console.error('Stderr:', stderr);
+            if (error.message.includes('Cannot find module')) {
+              reject(new Error('Missing dependencies. Please run: npm install puppeteer axios'));
+            } else {
+              reject(error);
+            }
+          } else {
+            resolve(stdout);
+          }
+        });
       });
-    });
+    } catch (scriptError) {
+      console.error('Failed to run scraper:', scriptError);
+      return res.status(500).json({ 
+        message: scriptError.message || 'Failed to run scraper script',
+        error: 'SCRAPER_ERROR' 
+      });
+    }
+
+    // Check if scraping result file exists
+    const scrapingFilePath = path.join(process.cwd(), 'scraping1.json');
+    if (!fs.existsSync(scrapingFilePath)) {
+      return res.status(500).json({ 
+        message: 'Scraping failed to produce output file',
+        error: 'NO_OUTPUT_FILE'
+      });
+    }
 
     // Read scraped data
     const scrapedData = JSON.parse(
-      fs.readFileSync(path.join(process.cwd(), 'scraping1.json'), 'utf8')
+      fs.readFileSync(scrapingFilePath, 'utf8')
     );
 
     // Store this as user's problem for today
@@ -75,6 +101,10 @@ export default async function handler(req, res) {
     res.status(200).json({ problem: formattedData });
   } catch (error) {
     console.error('Error in POTD API:', error);
-    res.status(500).json({ message: 'Internal server error', error: error.message });
+    res.status(500).json({ 
+      message: 'Internal server error', 
+      error: error.message,
+      errorType: error.name || 'UnknownError'
+    });
   }
 }

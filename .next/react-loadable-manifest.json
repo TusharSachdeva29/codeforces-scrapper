@@ -1,8 +1,1 @@
-{
-  "..\\components\\CodeEditor.js -> ./editor/CodeEditorPane": {
-    "id": "..\\components\\CodeEditor.js -> ./editor/CodeEditorPane",
-    "files": [
-      "static/chunks/components_editor_CodeEditorPane_js.js"
-    ]
-  }
-}
+{}
